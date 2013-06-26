@@ -46,14 +46,13 @@
        **/    
       function tingDisableAdvancedSearch() {
         // Hide advanced search.
-        $('.fieldset-legend').hide();
         $('.block-search-form form .extendsearch-advanced').removeClass('enabled');
         if ($('.block-search-form form input[name="search_block_form"]').hasClass('spinner')) {
           $('.block-search-form form input[name="search_block_form"]').removeClass('spinner');
           $('.block-search-form form input[name="search_block_form"]').parent().removeClass('spinner-wrapper');
         }
 
-        // Disable autocomplete.  
+        // Disable autocomplete.
         $('.block-search-form form input[name="search_block_form"]').autocomplete({
 
           // Overwrite source function.
