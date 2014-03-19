@@ -1,5 +1,5 @@
 (function($) {
- Drupal.behaviors.tingSearchAutocomplete = {
+  Drupal.behaviors.tingSearchAutocomplete = {
     attach: function(context) {
       /**
        * Function enabling the advanced search feature.
@@ -38,12 +38,12 @@
               $('#search-block-form').submit();
             }
           }
-        });        
+        });
       }
 
       /**
        * Function disabling the advanced search feature.
-       **/    
+       **/
       function tingDisableAdvancedSearch() {
         // Hide advanced search.
         $('.block-search-form form .extendsearch-advanced').removeClass('enabled');
@@ -69,12 +69,12 @@
           // Overwrite select function.
           select: function(event, ui) {
           }
-        });        
+        });
       }
 
       /**
        * Function moves advanced search values to default search field.
-       **/    
+       **/
       function tingMoveAdvancedSearchValues() {
         var fieldValue = $('.block-search-form form input[name="search_block_form"]').val();
         $('.block-search-form .extendsearch-advanced input').each(function() {
@@ -86,7 +86,16 @@
         $('.block-search-form form .ui-autocomplete-input').val(fieldValue);
       }
 
-      // Register event for clicking MATERIAL.
+      // Check if default selected search provider is ting.
+      if ($('input[name="search_provider"]:checked').val() == 'ting') {
+        tingEnableAdvancedSearch();
+      }
+      else {
+        tingDisableAdvancedSearch();
+        tingMoveAdvancedSearchValues();
+      }
+
+      // Register event for clicking search provider radio.
       $('input#edit-search-provider-ting.form-radio').live('click', function() {
         tingEnableAdvancedSearch();
       });
@@ -96,8 +105,7 @@
         tingDisableAdvancedSearch();
         tingMoveAdvancedSearchValues();
       });
- 
-      tingEnableAdvancedSearch();
+
     }
   };
 } (jQuery));
