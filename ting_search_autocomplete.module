@@ -4,7 +4,7 @@
  * Provides search suggestions when searching in the well.
  */
 
-define('TING_AUTOCOMPLETE_SUGGESTIONS', 10);
+define('TING_AUTOCOMPLETE_SUGGESTIONS_LIMIT', 10);
 
 /**
  * Implements hook_menu().
@@ -15,7 +15,7 @@ function ting_search_autocomplete_menu() {
   $items['ting/autocomplete/%'] = array(
     'title' => 'Ting search autocomplete',
     'description' => 'Returns a list of suggestions to use for autocompletion',
-    'access arguments' => array('search content' ),
+    'access arguments' => array('search content'),
     'page callback' => 'ting_search_autocomplete',
     'page arguments' => array(2),
     'type' => MENU_CALLBACK,

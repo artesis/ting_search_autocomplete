@@ -25,7 +25,7 @@ function ting_search_autocomplete($query) {
       $index = variable_get('ting_search_autocomplete_index', '');
       $filter = variable_get('ting_search_autocomplete_filter', '');
       $sort = variable_get('ting_search_autocomplete_sort', '');
-      $count = variable_get('ting_search_autocomplete_suggestions', TING_AUTOCOMPLETE_SUGGESTIONS);
+      $count = variable_get('ting_search_autocomplete_suggestions', TING_AUTOCOMPLETE_SUGGESTIONS_LIMIT);
 
       $q = array(
         'query' => $query,

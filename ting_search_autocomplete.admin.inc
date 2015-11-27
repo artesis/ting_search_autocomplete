@@ -45,7 +45,7 @@ function ting_search_autocomplete_admin_form($form, $form_state) {
   $form['ting_search_autocomplete_suggestions'] = array(
     '#type' => 'textfield',
     '#title' => t('Suggestions count'),
-    '#default_value' => variable_get('ting_search_autocomplete_suggestions', TING_AUTOCOMPLETE_SUGGESTIONS),
+    '#default_value' => variable_get('ting_search_autocomplete_suggestions', TING_AUTOCOMPLETE_SUGGESTIONS_LIMIT),
     '#description' => t('Number of suggestions to fetch.'),
     '#size' => 3,
     '#element_validate' => array('element_validate_integer_positive'),
