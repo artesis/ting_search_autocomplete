@@ -14,24 +14,19 @@
         $('.block-search-form form input[name="search_block_form"]').autocomplete({
           minLength: 3,
           source: function(request, response) {
-            jsonReq = $.getJSON(Drupal.settings.basePath + 'ting/autocomplete', {
-              query: request.term
-            }, response);
+            jsonReq = $.getJSON(Drupal.settings.basePath + 'ting/autocomplete/' + request.term, {}, response);
           },
           search: function(event, ui) {
-
             // When a search is beginning, show the spinner.
             $('.block-search-form form input[name="search_block_form"]').addClass('spinner');
             $('.block-search-form form input[name="search_block_form"]').parent().addClass('spinner-wrapper');
           },
           open: function(event, ui) {
-
             // When a search is done, use this, to hide the spinner.
             $('.block-search-form form input[name="search_block_form"]').removeClass('spinner');
             $('.block-search-form form input[name="search_block_form"]').parent().removeClass('spinner-wrapper');
           },
           select: function(event, ui) {
-
             // Add the chosen value to the searchbox and submit.
             if (ui.item) {
               $('.block-search-form form input[name="search_block_form"]').val(ui.item.value);

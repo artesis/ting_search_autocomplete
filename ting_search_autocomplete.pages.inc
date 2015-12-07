@@ -10,124 +10,62 @@
  * @param string $query
  *   Search query string.
  */
-function ting_search_autocomplete($query = NULL) {
-  $query = $_GET['query'];
-  $return = array();
-  $delimiter = 0;
+function ting_search_autocomplete($query) {
+  $suggestions = array();
 
-  if ($query == TRUE) {
-    $cache = cache_get(md5($query), 'cache_ting_search_autocomplete');
-    if ($cache instanceof stdClass && is_array($cache->data)) {
-      $return = $cache->data;
+  if (!empty($query)) {
+    $cid = md5($query);
+
+    $cache = cache_get($cid, 'cache_ting_search_autocomplete');
+    if ($cache) {
+      $suggestions = $cache->data;
     }
     else {
-      require_once drupal_get_path('module', 'ting') . '/ting.client.inc';
+      $service_url = variable_get('ting_search_autocomplete_url', '');
+      $index = variable_get('ting_search_autocomplete_index', '');
+      $filter = variable_get('ting_search_autocomplete_filter', '');
+      $sort = variable_get('ting_search_autocomplete_sort', '');
+      $count = variable_get('ting_search_autocomplete_suggestions', TING_AUTOCOMPLETE_SUGGESTIONS_LIMIT);
 
-      $terms = array();
+      $q = array(
+        'query' => $query,
+        'index' => $index,
+        'filterQuery' => $filter,
+        'sort' => $sort,
+        'maxSuggestions' => $count,
+        'agency' => variable_get('ting_agency', ''),
+        'profile' => variable_get('ting_search_profile', ''),
+      );
+      $url = url($service_url . 'rest/terms', array('absolute' => TRUE, 'query' => $q));
+      $result = drupal_http_request($url);
 
-      // Scan for search results.
-      $scan_results = ting_do_scan($query, 'anyIndexes', 10);
-      if (!empty($scan_results) && count($scan_results)) {
-        // Scan results.
-        foreach ($scan_results as $term) {
-          $terms['any'][strtolower($term->name)] = $term;
-        }
-        uasort($terms['any'], 'ting_search_autocomplete_term_sort');
-        $terms['any'] = array_reverse($terms['any']);
-      }
+      if ($result->code == '200') {
+        $raw_suggestions = $result->data;
+        $parsed_suggestions = json_decode($raw_suggestions);
 
-      // Scan for spell suggestions.
-      $spell_suggestions = ting_get_spell_suggestions($query, 3);
-      foreach ($spell_suggestions as $spell_word) {
-        if (strtolower($spell_word->word) == strtolower($query)) {
-          continue;
-        }
-        $spell_word->count = $spell_word->weight;
-        $spell_word->name  = $spell_word->word;
-        $terms['spell'][$spell_word->word] = $spell_word;
-      }
-
-      foreach ($terms as $type => $row) {
-        if (is_array($row)) {
-          foreach ($row as $term) {
-            $value = ting_search_autocomplete_substr_word_bondary($term->name);
-            if ($type == 'spell') {
-              $return[] = array(
-                'id' => $term->name,
-                'value' => $value,
-                'label' => t("Did you mean '@query' ?", array('@query' => $term->name)),
-              );
-            }
-            else {
-              $return[] = array(
-                'id' => $term->name,
-                'value' => $value,
-                'label' => $term->name,
-              );
-            }
+        if (isset($parsed_suggestions->suggestions) && is_array($parsed_suggestions->suggestions)) {
+          foreach ($parsed_suggestions->suggestions as $suggestion) {
+            $suggestions[] = array(
+              'id' => $suggestion->suggestion,
+              'name' => $suggestion->suggestion,
+              'label' => $suggestion->suggestion,
+            );
           }
         }
-      }
 
-      cache_set(md5($query), $return, 'cache_ting_search_autocomplete', CACHE_TEMPORARY);
-    }
-  }
-  drupal_json_output($return);
-}
-
-/**
- * Callback for uasort().
- *
- * Reorders autocomplete suggestions based on 'count' number.
- */
-function ting_search_autocomplete_term_sort($t1, $t2) {
-  if ($t1->count > $t2->count) {
-    return 1;
-  }
-  elseif ($t2 > $t1->count) {
-    return -1;
-  }
-  else {
-    return 0;
-  }
-}
-
-/**
- * Cut the word to limited number of chars.
- *
- * @param string $text
- *   Input word.
- * @param int $max
- *   Maximum number of chars.
- *
- * @return string
- *   Cut string.
- */
-function ting_search_autocomplete_substr_word_bondary($text, $max = 128) {
-  global $multibyte;
-  $strlen = drupal_strlen($text);
-
-  if ($strlen <= $max) {
-    return $text;
-  }
-  else {
-    if ($multibyte == UNICODE_MULTIBYTE) {
-      if (mb_strpos($text, ' ', $max) == $max + 1) {
-        $lastspace = $max;
+        cache_set($cid, $suggestions, 'cache_ting_search_autocomplete', CACHE_TEMPORARY);
       }
       else {
-        $lastspace = mb_strrpos($text, ' ', $max - $strlen);
+        $t = array(
+          '!code' => $result->code,
+          '!error' => $result->error,
+          '!url' => $url,
+        );
+        watchdog('ting_search_autocomplete', 'Failed to fetch suggestions from !url. Code: !code. Error: !error.', $t, WATCHDOG_ERROR);
       }
     }
-    else {
-      if (strpos($text, ' ', $max) == $max + 1) {
-        $lastspace = $max;
-      }
-      else {
-        $lastspace = strrpos($text, ' ', $max - $strlen);
-      }
-    }
-
-    return drupal_substr($text, 0, $lastspace);
   }
+
+  drupal_json_output($suggestions);
+  drupal_exit(0);
 }
