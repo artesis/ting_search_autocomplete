@@ -24,6 +24,22 @@ function ting_search_autocomplete_admin_form($form, $form_state) {
     '#required' => TRUE,
   );
 
+  $form['ting_search_spellcheck_index'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Spell check index'),
+    '#default_value' => variable_get('ting_search_spellcheck_index', ''),
+    '#description' => t('e.g.: scanterm.mainTitle'),
+    '#required' => TRUE,
+  );
+
+  $form['ting_search_spellcheck_facet_index'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Spell check facet index'),
+    '#default_value' => variable_get('ting_search_spellcheck_facet_index', ''),
+    '#description' => t('e.g.: scanphrase.mainTitle'),
+    '#required' => TRUE,
+  );
+
   $form['ting_search_autocomplete_filter'] = array(
     '#type' => 'textfield',
     '#title' => t('Autocomplete filter'),
