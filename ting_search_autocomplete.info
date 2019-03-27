@@ -1,7 +1,5 @@
 name = Ting search autocomplete
-description = Enables autocompletion for the Ting search box.
+description = Integrate Open Platform suggestion service.
 package = Ding!
 core = 7.x
-version = "7.x-2.7"
-dependencies[] = ting_search
-files[] = ting_search_autocomplete.test
+configure = admin/config/ting/autocomplete

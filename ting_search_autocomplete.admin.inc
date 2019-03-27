@@ -12,60 +12,25 @@ function ting_search_autocomplete_admin_form($form, $form_state) {
     '#type' => 'textfield',
     '#title' => t('Service URL'),
     '#default_value' => variable_get('ting_search_autocomplete_url', ''),
-    '#description' => t('e.g.: http://opensuggestion.addi.dk/b3.0_2.0/'),
+    '#description' => t('e.g.: https://openplatform.dbc.dk/v3/'),
     '#required' => TRUE,
   );
 
-  $form['ting_search_autocomplete_index'] = array(
+  $form['ting_search_autocomplete_client_id'] = array(
     '#type' => 'textfield',
-    '#title' => t('Autocomplete index'),
-    '#default_value' => variable_get('ting_search_autocomplete_index', ''),
-    '#description' => t('e.g.: scanterm.mainTitle'),
+    '#title' => t('Client ID'),
+    '#default_value' => variable_get('ting_search_autocomplete_client_id', ''),
     '#required' => TRUE,
   );
 
-  $form['ting_search_spellcheck_index'] = array(
+  $form['ting_search_autocomplete_client_secret'] = array(
     '#type' => 'textfield',
-    '#title' => t('Spell check index'),
-    '#default_value' => variable_get('ting_search_spellcheck_index', ''),
-    '#description' => t('e.g.: scanterm.mainTitle'),
+    '#title' => t('Client secret key'),
+    '#default_value' => variable_get('ting_search_autocomplete_client_secret', ''),
     '#required' => TRUE,
   );
 
-  $form['ting_search_spellcheck_facet_index'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Spell check facet index'),
-    '#default_value' => variable_get('ting_search_spellcheck_facet_index', ''),
-    '#description' => t('e.g.: scanphrase.mainTitle'),
-    '#required' => TRUE,
-  );
-
-  $form['ting_search_autocomplete_filter'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Autocomplete filter'),
-    '#default_value' => variable_get('ting_search_autocomplete_filter', ''),
-    '#description' => t('e.g.: scanphrase.mainTitle'),
-  );
-
-  $form['ting_search_autocomplete_sort'] = array(
-    '#type' => 'select',
-    '#title' => t('Suggestions sort'),
-    '#options' => array(
-      'index' => t('Index'),
-      'count' => t('Count'),
-    ),
-    '#default_value' => variable_get('ting_search_autocomplete_sort', 'index'),
-    '#description' => t('How the suggestions should be sorted.'),
-  );
-
-  $form['ting_search_autocomplete_suggestions'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Suggestions count'),
-    '#default_value' => variable_get('ting_search_autocomplete_suggestions', TING_AUTOCOMPLETE_SUGGESTIONS_LIMIT),
-    '#description' => t('Number of suggestions to fetch.'),
-    '#size' => 3,
-    '#element_validate' => array('element_validate_integer_positive'),
-  );
+  $form['#submit'][] = 'ting_search_autocomplete_admin_form_submit';
 
   return system_settings_form($form);
 }
@@ -81,4 +46,12 @@ function ting_search_autocomplete_admin_form_validate($form, &$form_state) {
   if (!valid_url($values['ting_search_autocomplete_url'], TRUE)) {
     form_set_error('ting_search_autocomplete_url', t('Enter a valid service URL.'));
   }
+}
+
+/**
+ * Generate access token.
+ */
+function ting_search_autocomplete_admin_form_submit($form, &$form_state) {
+  $values = $form_state['values'];
+  ting_search_autocomplete_generate_token($values['ting_search_autocomplete_client_id'], $values['ting_search_autocomplete_client_secret']);
 }

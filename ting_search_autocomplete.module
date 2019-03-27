@@ -4,8 +4,6 @@
  * Provides search suggestions when searching in the well.
  */
 
-define('TING_AUTOCOMPLETE_SUGGESTIONS_LIMIT', 10);
-
 /**
  * Implements hook_menu().
  */
@@ -17,6 +15,7 @@ function ting_search_autocomplete_menu() {
     'description' => 'Returns a list of suggestions to use for autocompletion',
     'access arguments' => array('search content'),
     'page callback' => 'ting_search_autocomplete',
+    'delivery callback' => 'drupal_json_output',
     'page arguments' => array(2),
     'type' => MENU_CALLBACK,
     'file' => 'ting_search_autocomplete.pages.inc'
@@ -38,6 +37,10 @@ function ting_search_autocomplete_menu() {
  * Implements hook_flush_caches().
  */
 function ting_search_autocomplete_flush_caches() {
+  $client_id = variable_get('ting_search_autocomplete_client_id', '');
+  $client_secret = variable_get('ting_search_autocomplete_client_secret', '');
+  ting_search_autocomplete_generate_token($client_id, $client_secret);
+
   return array('cache_ting_search_autocomplete');
 }
 
@@ -51,5 +54,39 @@ function ting_search_autocomplete_form_search_block_form_alter(&$form, &$form_st
     drupal_add_library('system', 'ui.autocomplete');
     drupal_add_css(drupal_get_path('module', 'ting_search_autocomplete') . '/css/ting_search_autocomplete.css');
     drupal_add_js(drupal_get_path('module', 'ting_search_autocomplete') . '/js/ting_search_autocomplete.js');
+  }
+}
+
+/**
+ * Generate token to be used for service request.
+ */
+function ting_search_autocomplete_generate_token($client_id, $client_secret) {
+  $curl = curl_init();
+  curl_setopt_array(
+    $curl,
+    array(
+      CURLOPT_RETURNTRANSFER => TRUE,
+      CURLOPT_URL => 'https://auth.dbc.dk/oauth/token',
+      CURLOPT_POST => TRUE,
+      CURLOPT_USERPWD => "$client_id:$client_secret",
+      CURLOPT_POSTFIELDS => http_build_query(
+        array(
+          'grant_type' => 'password',
+          'username' => '@',
+          'password' => '@',
+        )
+      )
+    )
+  );
+
+  $response = json_decode(curl_exec($curl));
+  curl_close($curl);
+
+  if (isset($response->access_token)) {
+    variable_set('ting_search_autocomplete_access_token', $response->access_token);
+  }
+  else {
+    drupal_set_message(t('Access token missing from response'), 'error');
+    watchdog('ting_search_autocomplete', 'Access token missing from response', $variables = [], $severity = WATCHDOG_NOTICE, $link = NULL);
   }
 }
