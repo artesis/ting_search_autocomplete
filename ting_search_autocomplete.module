@@ -4,8 +4,6 @@
  * Provides search suggestions when searching in the well.
  */
 
-define('TING_AUTOCOMPLETE_SUGGESTIONS_LIMIT', 10);
-
 /**
  * Implements hook_menu().
  */
@@ -17,6 +15,7 @@ function ting_search_autocomplete_menu() {
     'description' => 'Returns a list of suggestions to use for autocompletion',
     'access arguments' => array('search content'),
     'page callback' => 'ting_search_autocomplete',
+    'delivery callback' => 'drupal_json_output',
     'page arguments' => array(2),
     'type' => MENU_CALLBACK,
     'file' => 'ting_search_autocomplete.pages.inc'
@@ -38,6 +37,10 @@ function ting_search_autocomplete_menu() {
  * Implements hook_flush_caches().
  */
 function ting_search_autocomplete_flush_caches() {
+  $client_id = variable_get('ting_search_autocomplete_client_id', '');
+  $client_secret = variable_get('ting_search_autocomplete_client_secret', '');
+  ting_search_autocomplete_generate_token($client_id, $client_secret);
+
   return array('cache_ting_search_autocomplete');
 }
 
@@ -80,15 +83,10 @@ function ting_search_autocomplete_generate_token($client_id, $client_secret) {
   curl_close($curl);
 
   if (isset($response->access_token)) {
-    $access_token = $response->access_token;
-    variable_set('ting_search_autocomplete_token', array(
-      'access_token' => $access_token,
-      'expires_in' => $response->expires_in,
-    ));
+    variable_set('ting_search_autocomplete_access_token', $response->access_token);
   }
   else {
     drupal_set_message(t('Access token missing from response'), 'error');
     watchdog('ting_search_autocomplete', 'Access token missing from response', $variables = [], $severity = WATCHDOG_NOTICE, $link = NULL);
   }
-
 }
