@@ -61,6 +61,10 @@ function ting_search_autocomplete_form_search_block_form_alter(&$form, &$form_st
  * Generate token to be used for service request.
  */
 function ting_search_autocomplete_generate_token($client_id, $client_secret) {
+  if (empty($client_id) || empty($client_secret)) {
+    return;
+  }
+
   $curl = curl_init();
   curl_setopt_array(
     $curl,
