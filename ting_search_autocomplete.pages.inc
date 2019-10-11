@@ -32,7 +32,7 @@ function ting_search_autocomplete($query) {
 
       $suggestion_query = array(
         'access_token' => $access_token,
-        'q' => $query,
+        'q' => '"' . $query . '"',
       );
 
       $options = array(
