@@ -2,5 +2,5 @@ name = Ting search autocomplete
 description = Integrate Open Platform suggestion service.
 package = Ding!
 core = 7.x
-version = "7.x-4.0"
+version = "7.x-4.1"
 configure = admin/config/ting/autocomplete
